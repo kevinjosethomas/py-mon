@@ -5,7 +5,7 @@ import argparse
 import subprocess
 from colorama import Fore, Style
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import PatternMatchingEventHandler
 
 def main():
     """CLI Command to execute the provided script with pymon"""
@@ -26,7 +26,7 @@ def main():
     global process
 
     process = subprocess.Popen([sys.executable, arguments.filename])
-    event_handler = FileSystemEventHandler()
+    event_handler = PatternMatchingEventHandler(patterns=["*.py"])
 
     def handle_event(event):
 
