@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="py-mon",
-    version="1.0.1",
+    version="1.0.2",
     author="TrustedMercury",
     author_email="trustedmercury@gmail.com",
     description="Simple package to automatically restart application when file changes are detected!",
