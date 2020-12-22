@@ -25,7 +25,6 @@ def main():
 
     global process
 
-    process = subprocess.Popen([sys.executable, arguments.filename])
     event_handler = PatternMatchingEventHandler(patterns=["*.py"])
 
     def handle_event(event):
