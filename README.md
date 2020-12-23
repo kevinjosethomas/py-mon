@@ -1,4 +1,4 @@
-# py-mon ![](https://api.ghprofile.me/view?username=TrustedMercury-py-mon)
+# py-mon [![](https://img.shields.io/pypi/v/py-mon?color=3776AB&logo=python&style=for-the-badge)](https://pypi.org/project/py-mon/) [![](https://img.shields.io/pypi/dm/filter-profanity?color=3776AB&logo=python&style=for-the-badge)](https://pypi.org/project/py-mon/) ![](https://api.ghprofile.me/view?username=TrustedMercury-py-mon&label=REPOSITORY%20VIEW%20COUNT)
 Simple package to automatically restart application when file changes are detected!
 
 I spend a lot of time developing discord bots and it's a hassle to constantly ``Ctrl+C`` and then run the bot again on my terminal. 
