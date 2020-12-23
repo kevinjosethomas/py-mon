@@ -1,9 +1,11 @@
 # py-mon ![](https://api.ghprofile.me/view?username=TrustedMercury-py-mon)
 Simple package to automatically restart application when file changes are detected!
 
-I spend a lot of time developing discord bots and it's a hassle to constantly ``Ctrl+C`` and then run the bot again on my terminal. As an active web developer who works with NodeJS, I decided to make something like [nodemon](https://github.com/remy/nodemon) but for Python.
+I spend a lot of time developing discord bots and it's a hassle to constantly ``Ctrl+C`` and then run the bot again on my terminal. 
 
-Introducing ``py-mon``, a simple and easy to use python package that automatically runs your python script when it detects file changes. I've only spent a couple of hours in developing this and I hope to add a bunch of features in the future, from ignoring certain files to prioritizing certain extensions.
+![](https://media1.tenor.com/images/5d6cd0c6b0a0ae3c193e766fb8f1ed1f/tenor.gif?itemid=14057131)
+
+As an active web developer who works with NodeJS, I decided to make something like [nodemon](https://github.com/remy/nodemon) but for Python. Introducing ``py-mon``, a simple and easy to use python package that automatically runs your python script when it detects file changes. I've only spent a couple of hours in developing this and I hope to add a bunch of features in the future, from ignoring certain files to prioritizing certain extensions.
 
 
 ## Sidetrack - A little about me
