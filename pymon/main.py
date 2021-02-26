@@ -3,6 +3,7 @@ import sys
 import time
 import argparse
 import subprocess
+import platform
 from colorama import Fore, Style
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -31,7 +32,7 @@ def main():
 
         global process
         
-        os.system("pymon restarting...")
+        if platform.system() == 'Windows': os.system("title pymon restarting...")
         print(Fore.GREEN + "[pymon] restarting due to changes..." + Style.RESET_ALL)
 
         if arguments.force_kill:
@@ -48,10 +49,10 @@ def main():
 
     observer.start()
     
-    os.system("pymon watching directory")
+    if platform.system() == 'Windows': os.system("title pymon watching directory")
     print(Fore.YELLOW + Style.BRIGHT + "\n[pymon] watching directory" + Style.RESET_ALL)
 
-    os.system(f"pymon starting {arguments.filename}")
+    if platform.system() == 'Windows': os.system(f"title pymon starting {arguments.filename}")
     process = subprocess.Popen([sys.executable, arguments.filename])
     print(Fore.GREEN + f"[pymon] starting {arguments.filename}" + Style.RESET_ALL)
 
@@ -63,5 +64,5 @@ def main():
     observer.join()
 
 if __name__ == "__main__":
-    os.system("pymon")
+    if platform.system() == 'Windows': os.system("title pymon")
     main()
