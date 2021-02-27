@@ -3,12 +3,12 @@ import sys
 import time
 import argparse
 import subprocess
-import platform
-from colorama import Fore, Style
+from colorama import Fore, Style, init
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
 def main():
+    init()
     """CLI Command to execute the provided script with pymon"""
 
     # CLI Argument Parser
@@ -32,7 +32,6 @@ def main():
 
         global process
         
-        if platform.system() == 'Windows': os.system("title pymon restarting...")
         print(Fore.GREEN + "[pymon] restarting due to changes..." + Style.RESET_ALL)
 
         if arguments.force_kill:
@@ -49,10 +48,8 @@ def main():
 
     observer.start()
     
-    if platform.system() == 'Windows': os.system("title pymon watching directory")
     print(Fore.YELLOW + Style.BRIGHT + "\n[pymon] watching directory" + Style.RESET_ALL)
 
-    if platform.system() == 'Windows': os.system(f"title pymon starting {arguments.filename}")
     process = subprocess.Popen([sys.executable, arguments.filename])
     print(Fore.GREEN + f"[pymon] starting {arguments.filename}" + Style.RESET_ALL)
 
@@ -64,5 +61,4 @@ def main():
     observer.join()
 
 if __name__ == "__main__":
-    if platform.system() == 'Windows': os.system("title pymon")
     main()
