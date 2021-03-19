@@ -41,17 +41,21 @@ def main():
         process = subprocess.Popen([sys.executable, arguments.filename])
 
     event_handler.on_any_event = handle_event
+    
     observer = Observer()
     observer.schedule(event_handler, os.getcwd(), recursive=True)
     observer.start()
+    
     print(Fore.YELLOW + Style.BRIGHT + "\n[pymon] watching directory" + Style.RESET_ALL)
     process = subprocess.Popen([sys.executable, arguments.filename])
     print(Fore.GREEN + f"[pymon] starting {arguments.filename}" + Style.RESET_ALL)
+    
     try:
         while True:
             time.sleep(2)
     except KeyboardInterrupt:
         observer.stop()
+        
     observer.join()
 
 if __name__ == "__main__":
