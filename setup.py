@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="py-mon",
-    version="1.0.2",
-    author="TrustedMercury",
+    version="1.1.0",
+    author="trustedmercury",
     author_email="trustedmercury@gmail.com",
     description="Simple package to automatically restart application when file changes are detected!",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/TrustedMercury/py-mon",
+    url="https://github.com/trustedmercury/py-mon",
     keywords="development, testing, monitor",
     packages=setuptools.find_packages(),
     include_package_data=True,
