@@ -19,13 +19,17 @@ def main():
     )
 
     # Adding arguments to the command
-    parser.add_argument("filename", type=str, help="The file to execute with pymon", metavar="filename")
-    parser.add_argument("--all", action="store_true", default=False, help="Watch all python Files in directory", dest="all_py")
-    parser.add_argument("--force-kill", action="store_true", default=False, help="Force kills the file instead of terminating it", dest="force_kill")
+    parser.add_argument(
+        "filename", type=str, help="The file to execute with pymon", metavar="filename")
+    parser.add_argument("--all", action="store_true", default=False,
+                        help="Watch all python Files in directory", dest="all_py")
+    parser.add_argument("--force-kill", action="store_true", default=False,
+                        help="Force kills the file instead of terminating it", dest="force_kill")
 
     # Fetch arguments
     arguments = parser.parse_args()
-    event_handler = PatternMatchingEventHandler(patterns=['*.py' if arguments.all_py else arguments.filename])
+    event_handler = PatternMatchingEventHandler(
+        patterns=['*.py' if arguments.all_py else arguments.filename])
 
     observer = Observer()
     observer.schedule(event_handler, getcwd(), recursive=True)
@@ -37,7 +41,8 @@ def main():
 
     def handle_event(event):
         file_change_type = event.event_type
-        print(Fore.GREEN + "[pymon] restarting due to {}...".format(file_change_type) + Style.RESET_ALL)
+        print(
+            Fore.GREEN + "[pymon] restarting due to {}...".format(file_change_type) + Style.RESET_ALL)
         process.kill() if arguments.force_kill else process.terminate()
         if file_change_type == 'deleted':
             exit()
@@ -45,24 +50,21 @@ def main():
             _run_file()
 
     def _prompt_terminate():
-        confirm_terminate = input('Are you sure you want to Terminate?(Y|n) ')
-        if confirm_terminate.lower() == 'y':
-            observer.stop()
+        print("\nTerminating...")
 
     event_handler.on_any_event = handle_event
 
     if arguments.all_py:
-        print(Fore.YELLOW + Style.BRIGHT + f"[pymon] watching Directory`" + Style.RESET_ALL)
-    print(Fore.GREEN + f"[pymon] starting `python {arguments.filename}`" + Style.RESET_ALL)
+        print(Fore.YELLOW + Style.BRIGHT +
+              f"[pymon] watching Directory`" + Style.RESET_ALL)
+    print(Fore.GREEN +
+          f"[pymon] starting `python {arguments.filename}`" + Style.RESET_ALL)
     _run_file()
 
     try:
-        while True:
-            pass
+        observer.join()
     except KeyboardInterrupt:
         _prompt_terminate()
-
-    observer.join()
 
 
 if __name__ == "__main__":
