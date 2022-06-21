@@ -3,6 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 setuptools.setup(
     name="py-mon",
     version="1.1.0",
@@ -23,5 +24,9 @@ setuptools.setup(
     python_requires='>=3.6',
     entry_points={
         "console_scripts": ["pymon=pymon.main:main"]
-    }
+    },
+    install_requires=[
+        'watchdog',
+        'colorama'
+    ]
 )
