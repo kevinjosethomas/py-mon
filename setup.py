@@ -27,6 +27,7 @@ setuptools.setup(
     },
     install_requires=[
         'watchdog',
-        'colorama'
+        'colorama',
+        'click'
     ]
 )
