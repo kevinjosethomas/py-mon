@@ -12,6 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/trustedmercury/py-mon",
+    install_requires=['watchdog'],
     keywords="development, testing, monitor",
     packages=setuptools.find_packages(),
     include_package_data=True,
