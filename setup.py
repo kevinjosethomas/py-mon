@@ -23,5 +23,9 @@ setuptools.setup(
     python_requires='>=3.6',
     entry_points={
         "console_scripts": ["pymon=pymon.main:main"]
-    }
+    },
+    install_requires=[
+        "colorama",
+        "watchdog",
+    ]
 )
