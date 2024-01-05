@@ -12,15 +12,19 @@ class Monitor:
         log(Color.YELLOW, "restarting due to changes detected...")
         self.restart_process()
 
-    def __init__(self, filename: str):
-        self.filename = filename
+    def __init__(self, arguments):
+        self.filename = arguments.filename
+        self.patterns = arguments.patterns
+        self.args = arguments.args
+        self.watch = arguments.watch
+
         self.process = None
 
-        self.event_handler = PatternMatchingEventHandler(patterns=["*.py"])
+        self.event_handler = PatternMatchingEventHandler(patterns=self.patterns)
         self.event_handler.on_any_event = self._handle_event
 
         self.observer = Observer()
-        self.observer.schedule(self.event_handler, os.getcwd(), recursive=True)
+        self.observer.schedule(self.event_handler, self.watch, recursive=True)
 
     def start(self):
         log(Color.YELLOW, "watching...")
@@ -42,7 +46,7 @@ class Monitor:
 
     def start_process(self):
         log(Color.GREEN, f"starting {self.filename}")
-        self.process = subprocess.Popen([executable, self.filename])
+        self.process = subprocess.Popen([executable, self.filename, *self.args])
 
     def stop_process(self):
         self.process.terminate()
