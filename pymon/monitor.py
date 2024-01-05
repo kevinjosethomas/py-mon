@@ -27,7 +27,8 @@ class Monitor:
         self.observer.schedule(self.event_handler, self.watch, recursive=True)
 
     def start(self):
-        log(Color.YELLOW, "watching...")
+        log(Color.YELLOW, f"watching path: {self.watch}")
+        log(Color.YELLOW, f"watching patterns: {", ".join(self.patterns)}")
         log(Color.YELLOW, "enter 'rs' to restart or 'stop' to terminate")
 
         self.observer.start()
