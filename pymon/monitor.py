@@ -10,6 +10,10 @@ from .logger import *
 class Monitor:
     def _handle_event(self, event):
         log(Color.YELLOW, "restarting due to changes detected...")
+
+        if self.debug:
+            log(Color.CYAN, f"{event.event_type} {event.src_path}")
+
         self.restart_process()
 
     def __init__(self, arguments):
@@ -19,6 +23,7 @@ class Monitor:
         self.patterns = arguments.patterns
         self.args = arguments.args
         self.watch = arguments.watch
+        self.debug = arguments.debug
 
         self.process = None
 

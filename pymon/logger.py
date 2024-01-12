@@ -6,6 +6,7 @@ class Color:
     GREEN = Fore.GREEN
     YELLOW = Fore.YELLOW + Style.BRIGHT
     RED = Fore.RED
+    CYAN = Fore.CYAN
 
 
 def log(colour, message):

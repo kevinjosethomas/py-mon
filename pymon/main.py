@@ -44,6 +44,13 @@ parser.add_argument(
     metavar="command",
 )
 
+parser.add_argument(
+    "-d",
+    "--debug",
+    help="logs detected file changes to the terminal",
+    action="store_true",
+)
+
 
 def main():
     colorama.init()
