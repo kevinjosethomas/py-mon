@@ -13,7 +13,9 @@ class Monitor:
         self.restart_process()
 
     def __init__(self, arguments):
-        self.filename = arguments.filename
+        self.filename = arguments.filename + (
+            ".py" if not arguments.filename.endswith(".py") else ""
+        )
         self.patterns = arguments.patterns
         self.args = arguments.args
         self.watch = arguments.watch
