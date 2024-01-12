@@ -28,7 +28,10 @@ class Monitor:
         self.process = None
 
         self.event_handler = PatternMatchingEventHandler(patterns=self.patterns)
-        self.event_handler.on_any_event = self._handle_event
+        self.event_handler.on_modified = self._handle_event
+        self.event_handler.on_created = self._handle_event
+        self.event_handler.on_deleted = self._handle_event
+        self.event_handler.on_moved = self._handle_event
 
         self.observer = Observer()
         self.observer.schedule(self.event_handler, self.watch, recursive=True)
