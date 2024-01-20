@@ -21,13 +21,16 @@ class Monitor:
             ".py" if not arguments.filename.endswith(".py") else ""
         )
         self.patterns = arguments.patterns
+        self.ignore_patterns = arguments.ignore_patterns
         self.args = arguments.args
         self.watch = arguments.watch
         self.debug = arguments.debug
 
         self.process = None
 
-        self.event_handler = PatternMatchingEventHandler(patterns=self.patterns)
+        self.event_handler = PatternMatchingEventHandler(
+            patterns=self.patterns, ignore_patterns=self.ignore_patterns
+        )
         self.event_handler.on_modified = self._handle_event
         self.event_handler.on_created = self._handle_event
         self.event_handler.on_deleted = self._handle_event
@@ -39,6 +42,9 @@ class Monitor:
     def start(self):
         log(Color.YELLOW, f"watching path: {self.watch}")
         log(Color.YELLOW, f"watching patterns: {', '.join(self.patterns)}")
+        log(
+            Color.YELLOW, f"watching ignore-patterns: {', '.join(self.ignore_patterns)}"
+        )
         log(Color.YELLOW, "enter 'rs' to restart or 'stop' to terminate")
 
         self.observer.start()

@@ -25,6 +25,16 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-i",
+    "--ignore-patterns",
+    type=str,
+    help="ignores event paths with these patterns. use once for each pattern",
+    action="append",
+    default=[".#*.py"],
+    metavar="ignore patterns",
+)
+
+parser.add_argument(
     "-w",
     "--watch",
     type=str,
