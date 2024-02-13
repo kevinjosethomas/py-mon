@@ -38,8 +38,8 @@ parser.add_argument(
     "-a",
     "--args",
     type=str,
-    help="arguments to pass on to the execution script",
-    action="store",
+    help="arguments to pass on to the execution script. use once for each argument.",
+    action="append",
     default=[],
     metavar="command",
 )
