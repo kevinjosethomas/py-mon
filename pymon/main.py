@@ -1,3 +1,4 @@
+import time
 import argparse
 import colorama
 
@@ -51,6 +52,13 @@ parser.add_argument(
     action="store_true",
 )
 
+parser.add_argument(
+    "-c",
+    "--clean",
+    help="runs pymon in clean mode (no logs, no commands)",
+    action="store_true",
+)
+
 
 def main():
     colorama.init()
@@ -61,12 +69,15 @@ def main():
 
     try:
         while True:
-            cmd = input()
-            if cmd == "rs":
-                monitor.restart_process()
-            elif cmd == "stop":
-                monitor.stop()
-                break
+            if not arguments.clean:
+                cmd = input()
+                if cmd == "rs":
+                    monitor.restart_process()
+                elif cmd == "stop":
+                    monitor.stop()
+                    break
+            else:
+                time.sleep(1)
     except KeyboardInterrupt:
         monitor.stop()
 

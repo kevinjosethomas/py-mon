@@ -1,4 +1,3 @@
-import os
 import subprocess
 from sys import executable
 from watchdog.observers import Observer
@@ -9,10 +8,11 @@ from .logger import *
 
 class Monitor:
     def _handle_event(self, event):
-        log(Color.YELLOW, "restarting due to changes detected...")
+        if not self.clean:
+            log(Color.YELLOW, "restarting due to changes detected...")
 
-        if self.debug:
-            log(Color.CYAN, f"{event.event_type} {event.src_path}")
+            if self.debug:
+                log(Color.CYAN, f"{event.event_type} {event.src_path}")
 
         self.restart_process()
 
@@ -24,6 +24,7 @@ class Monitor:
         self.args = arguments.args
         self.watch = arguments.watch
         self.debug = arguments.debug
+        self.clean = arguments.clean
 
         self.process = None
 
@@ -37,9 +38,10 @@ class Monitor:
         self.observer.schedule(self.event_handler, self.watch, recursive=True)
 
     def start(self):
-        log(Color.YELLOW, f"watching path: {self.watch}")
-        log(Color.YELLOW, f"watching patterns: {', '.join(self.patterns)}")
-        log(Color.YELLOW, "enter 'rs' to restart or 'stop' to terminate")
+        if not self.clean:
+            log(Color.YELLOW, f"watching path: {self.watch}")
+            log(Color.YELLOW, f"watching patterns: {', '.join(self.patterns)}")
+            log(Color.YELLOW, "enter 'rs' to restart or 'stop' to terminate")
 
         self.observer.start()
         self.start_process()
@@ -49,14 +51,16 @@ class Monitor:
         self.observer.stop()
         self.observer.join()
 
-        log(Color.RED, "terminated process")
+        if not self.clean:
+            log(Color.RED, "terminated process")
 
     def restart_process(self):
         self.stop_process()
         self.start_process()
 
     def start_process(self):
-        log(Color.GREEN, f"starting {self.filename}")
+        if not self.clean:
+            log(Color.GREEN, f"starting {self.filename}")
         self.process = subprocess.Popen([executable, self.filename, *self.args])
 
     def stop_process(self):
