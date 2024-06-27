@@ -64,5 +64,7 @@ class Monitor:
         self.process = subprocess.Popen([executable, self.filename, *self.args])
 
     def stop_process(self):
-        self.process.terminate()
-        self.process = None
+        if self.process is not None:
+            self.process.terminate()
+            self.process.wait()
+            self.process = None
