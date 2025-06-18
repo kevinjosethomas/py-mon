@@ -160,4 +160,5 @@ class Monitor:
 
         if self.process:
             self.process.terminate()
+            self.process.wait()
             self.process = None
