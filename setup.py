@@ -26,4 +26,9 @@ setuptools.setup(
         "colorama",
         "watchdog",
     ],
+    extras_require={
+        "dev": [
+            "pytest>=7.0.0",
+        ],
+    },
 )

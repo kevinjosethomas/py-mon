@@ -49,6 +49,13 @@ You can create a `.pymonrc` or `pymon.json` file in your project root to define 
 
 Command line arguments will always override config file settings.
 
+### Tests
+Run the test suite locally with pytest:
+```
+pip install -e ".[dev]"
+pytest
+```
+
 Anyway that's basically it! Thanks for everything, I would appreciate it if you could leave a follow or star this repository ❣️ If you have any feature requests, read below!
 
 ## Contributing
