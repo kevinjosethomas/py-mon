@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="py-mon",
-    version="2.1.0",
+    version="2.2.0",
     author="kevinjosethomas",
     author_email="kevin.jt2007@gmail.com",
     description="🔁 Automatically restart application when file changes are detected; made for development",
@@ -26,4 +26,9 @@ setuptools.setup(
         "colorama",
         "watchdog",
     ],
+    extras_require={
+        "dev": [
+            "pytest>=7.0.0",
+        ],
+    },
 )
