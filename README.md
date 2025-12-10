@@ -34,6 +34,21 @@ When running pymon, you can use these commands:
 - Type `rs` to manually restart the process
 - Type `stop` to terminate pymon
 
+### Config File
+You can create a `.pymonrc` or `pymon.json` file in your project root to define default settings:
+
+```json
+{
+  "watch": ["*.py", "config/*.yaml"],
+  "ignore": ["*__pycache__*", "*.log"],
+  "debug": false,
+  "clean": false,
+  "exec": false
+}
+```
+
+Command line arguments will always override config file settings.
+
 Anyway that's basically it! Thanks for everything, I would appreciate it if you could leave a follow or star this repository ❣️ If you have any feature requests, read below!
 
 ## Contributing

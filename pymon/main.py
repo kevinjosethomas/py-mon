@@ -1,8 +1,50 @@
+import json
 import time
 import argparse
 import colorama
+from pathlib import Path
 
 from .monitor import Monitor
+from .logger import log, Color
+
+CONFIG_FILES = [".pymonrc", "pymon.json"]
+
+
+def load_config():
+    """Load configuration from .pymonrc or pymon.json if present."""
+    for config_name in CONFIG_FILES:
+        config_path = Path(config_name)
+        if config_path.exists():
+            try:
+                with open(config_path, "r") as f:
+                    config = json.load(f)
+                return config, config_name
+            except json.JSONDecodeError as e:
+                log(Color.RED, f"Error parsing {config_name}: {e}")
+                return {}, None
+    return {}, None
+
+
+def merge_config(args, config):
+    """Merge config file settings with command line arguments. CLI takes precedence."""
+
+    if args.watch is None:
+        args.watch = config.get("watch", ["*.py"])
+
+    if not args.ignore:
+        args.ignore = config.get("ignore", [])
+
+    if not args.debug:
+        args.debug = config.get("debug", False)
+
+    if not args.clean:
+        args.clean = config.get("clean", False)
+
+    if not args.exec:
+        args.exec = config.get("exec", False)
+
+    return args
+
 
 parser = argparse.ArgumentParser(
     prog="pymon",
@@ -21,7 +63,7 @@ parser.add_argument(
     type=str,
     help="paths/patterns to watch (e.g., 'src/*.py', 'data/**/*.json'). use once for each path/pattern. default is '*.py'",
     action="append",
-    default=["*.py"],
+    default=None,
     metavar="path_pattern",
 )
 
@@ -61,6 +103,11 @@ parser.add_argument(
 def main():
     colorama.init()
     arguments = parser.parse_args()
+
+    config, config_name = load_config()
+    if config and not arguments.clean:
+        log(Color.CYAN, f"using config from {config_name}")
+    arguments = merge_config(arguments, config)
 
     monitor = Monitor(arguments)
     monitor.start()
