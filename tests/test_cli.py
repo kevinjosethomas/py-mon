@@ -2,6 +2,7 @@
 
 import pytest
 from pymon.main import parser
+from pymon import __version__
 
 
 class TestCLIArguments:
@@ -109,4 +110,22 @@ class TestCLIArguments:
         args = parser.parse_args(["python -m http.server", "-x"])
         assert args.command == "python -m http.server"
         assert args.exec is True
+
+    def test_version_flag(self, capsys):
+        """Should print version and exit."""
+        with pytest.raises(SystemExit) as excinfo:
+            parser.parse_args(["--version"])
+
+        assert excinfo.value.code == 0
+        out = capsys.readouterr().out
+        assert __version__ in out
+
+    def test_version_short_flag(self, capsys):
+        """Should print version with short flag and exit."""
+        with pytest.raises(SystemExit) as excinfo:
+            parser.parse_args(["-V"])
+
+        assert excinfo.value.code == 0
+        out = capsys.readouterr().out
+        assert __version__ in out
 

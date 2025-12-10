@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .monitor import Monitor
 from .logger import log, Color
+from . import __version__
 
 CONFIG_FILES = [".pymonrc", "pymon.json"]
 
@@ -51,6 +52,14 @@ def merge_config(args, config):
 
 parser = argparse.ArgumentParser(
     prog="pymon",
+)
+
+parser.add_argument(
+    "-V",
+    "--version",
+    action="version",
+    version=f"%(prog)s {__version__}",
+    help="show the py-mon version and exit",
 )
 
 parser.add_argument(
