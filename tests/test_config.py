@@ -62,6 +62,19 @@ class TestLoadConfig:
         assert config == {}
         assert name is None
 
+    def test_unreadable_config_file(self, tmp_path, monkeypatch):
+        """Should handle unreadable config file gracefully."""
+        monkeypatch.chdir(tmp_path)
+
+        config_file = tmp_path / ".pymonrc"
+        config_file.write_text("{}")
+
+        with patch("builtins.open", side_effect=PermissionError("denied")):
+            config, name = load_config()
+
+        assert config == {}
+        assert name is None
+
     def test_invalid_json(self, tmp_path, monkeypatch, capsys):
         """Should handle invalid JSON gracefully."""
         monkeypatch.chdir(tmp_path)

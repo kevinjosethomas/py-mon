@@ -22,6 +22,9 @@ def load_config():
             except json.JSONDecodeError as e:
                 log(Color.RED, f"Error parsing {config_name}: {e}")
                 return {}, None
+            except OSError as e:
+                log(Color.RED, f"Error reading {config_name}: {e}")
+                return {}, None
     return {}, None
 
 
