@@ -1,7 +1,7 @@
 import argparse
 import threading
 import subprocess
-from .logger import *
+from .logger import log, Color
 from sys import executable
 from pathlib import Path
 from watchdog.observers import Observer
