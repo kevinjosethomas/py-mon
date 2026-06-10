@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Migrated packaging from `setup.py` to `pyproject.toml`; the version is now single-sourced from `pymon.__version__`.
+- Declared `requires-python >= 3.9` (the code uses syntax unavailable before 3.9; the previous `>=3.6` claim was incorrect).
+- CI now tests Python 3.9 through 3.13.
+
 ## 2.2.0
 - Added `--version` / `-V` to print the installed version.
 - Added config file support (`.pymonrc`, `pymon.json`).
