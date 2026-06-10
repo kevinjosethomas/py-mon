@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.3.0
 - Fixed watch patterns leaking across directories: each `-w` path now only reacts to its own pattern instead of every pattern from every flag.
 - Restarts are now debounced (default 250ms, configurable via `--delay` or the `delay` config key, in milliseconds), so editor save bursts cause a single restart. This implements the previously documented `delay` config option.
 - `__pycache__`, `.pyc`/`.pyo` files and `.git` internals are ignored by default.
