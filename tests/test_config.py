@@ -112,6 +112,7 @@ class TestMergeConfig:
             "debug": False,
             "clean": False,
             "exec": False,
+            "delay": None,
         }
         defaults.update(kwargs)
         return Namespace(**defaults)
@@ -196,6 +197,33 @@ class TestMergeConfig:
         result = merge_config(args, config)
 
         assert result.exec is True
+
+    def test_config_sets_delay(self):
+        """Config should set delay when CLI doesn't specify."""
+        args = self.create_args(delay=None)
+        config = {"delay": 500}
+
+        result = merge_config(args, config)
+
+        assert result.delay == 500
+
+    def test_cli_delay_overrides_config(self):
+        """CLI delay should override config delay."""
+        args = self.create_args(delay=100)
+        config = {"delay": 500}
+
+        result = merge_config(args, config)
+
+        assert result.delay == 100
+
+    def test_default_delay_when_no_config(self):
+        """Should use the default delay when no CLI or config value."""
+        args = self.create_args(delay=None)
+        config = {}
+
+        result = merge_config(args, config)
+
+        assert result.delay == 250
 
     def test_empty_config_uses_defaults(self):
         """Empty config should result in default values."""

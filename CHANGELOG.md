@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Fixed watch patterns leaking across directories: each `-w` path now only reacts to its own pattern instead of every pattern from every flag.
+- Restarts are now debounced (default 250ms, configurable via `--delay` or the `delay` config key, in milliseconds), so editor save bursts cause a single restart. This implements the previously documented `delay` config option.
+- `__pycache__`, `.pyc`/`.pyo` files and `.git` internals are ignored by default.
+- Watching a nonexistent directory now prints a friendly error and exits instead of dumping a traceback.
+- A single watchdog observer is used for all watch paths instead of one thread per path.
 - Fixed crash (`EOFError`) when running with stdin closed (CI, process managers); pymon now keeps watching with command input disabled.
 - Fixed `-x` (exec mode) leaving the shell's child processes running after stop/restart; the whole process group is now terminated.
 - Fixed zombie (defunct) processes accumulating on every restart; pymon now waits for the old process to exit (and force-kills it after 5s) before starting a new one.

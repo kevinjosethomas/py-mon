@@ -5,7 +5,7 @@ import argparse
 import colorama
 from pathlib import Path
 
-from .monitor import Monitor
+from .monitor import Monitor, DEFAULT_DELAY_MS
 from .logger import log, Color
 from . import __version__
 
@@ -47,6 +47,9 @@ def merge_config(args, config):
 
     if not args.exec:
         args.exec = config.get("exec", False)
+
+    if args.delay is None:
+        args.delay = config.get("delay", DEFAULT_DELAY_MS)
 
     return args
 
@@ -110,6 +113,14 @@ parser.add_argument(
     help="execute a shell command instead of running a Python file",
     action="store_true",
     default=False,
+)
+
+parser.add_argument(
+    "--delay",
+    type=int,
+    help=f"milliseconds to wait after the last file change before restarting (default: {DEFAULT_DELAY_MS})",
+    default=None,
+    metavar="ms",
 )
 
 

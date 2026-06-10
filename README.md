@@ -19,6 +19,7 @@ Zero-config reloads for Python files by default. Requires Python 3.9+.
 - `-x / --exec`: run a shell command instead of `python <file>`.
 - `-d / --debug`: print changed paths.
 - `-c / --clean`: no logs, no stdin commands.
+- `--delay <ms>`: wait this long after the last change before restarting (default `250`), so editor save bursts trigger one restart.
 
 ### Command Input
 When running pymon, you can use these commands:
@@ -42,6 +43,8 @@ Put a `.pymonrc` or `pymon.json` in your project root to keep team settings cons
 ```
 
 Command line arguments will always override config file settings.
+
+`__pycache__`, `.pyc`/`.pyo` files and `.git` internals are always ignored, in addition to any `ignore` patterns you set.
 
 Anyway that's basically it! Thanks for everything, I would appreciate it if you could leave a follow or star this repository ❣️ If you have any feature requests, read below!
 

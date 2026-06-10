@@ -90,6 +90,16 @@ class TestCLIArguments:
         args = parser.parse_args(["app.py", "-x"])
         assert args.exec is True
 
+    def test_delay_default_none(self):
+        """Should have None as default delay (merged later)."""
+        args = parser.parse_args(["app.py"])
+        assert args.delay is None
+
+    def test_delay_flag(self):
+        """Should parse --delay in milliseconds."""
+        args = parser.parse_args(["app.py", "--delay", "500"])
+        assert args.delay == 500
+
     def test_combined_flags(self):
         """Should parse multiple flags together."""
         args = parser.parse_args([
