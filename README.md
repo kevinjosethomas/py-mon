@@ -6,7 +6,7 @@ A modern, easy-to-use package to automatically restart a Python application when
 pip install -U py-mon
 pymon app.py
 ```
-Zero-config reloads for Python files by default.
+Zero-config reloads for Python files by default. Requires Python 3.9+.
 
 ### Why py-mon?
 - Works for Python files or any shell command (`-x "npm run dev"`).
@@ -25,6 +25,8 @@ Zero-config reloads for Python files by default.
 When running pymon, you can use these commands:
 - Type `rs` to manually restart the process
 - Type `stop` to terminate pymon
+
+If stdin is not available (e.g. running in CI or under a process manager), pymon keeps watching with command input disabled. When pymon stops or restarts your program, it terminates the whole process group, so shell commands started with `-x` don't leave stray child processes behind.
 
 ### Optional Config File
 Put a `.pymonrc` or `pymon.json` in your project root to keep team settings consistent:

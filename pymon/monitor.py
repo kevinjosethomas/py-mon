@@ -1,3 +1,5 @@
+import os
+import signal
 import argparse
 import threading
 import subprocess
@@ -172,19 +174,50 @@ class Monitor:
         if not self.clean:
             log(Color.GREEN, f"starting {self.command}")
 
+        # On POSIX, run the child in its own process group so that shell
+        # commands (-x) and any grandchildren can be terminated together.
+        kwargs = {"start_new_session": True} if os.name == "posix" else {}
+
         if self.exec_mode:
-            if not self.clean:
-                log(Color.GREEN, f"executing: {self.command}")
-            self.process = subprocess.Popen(self.command, shell=True)
+            self.process = subprocess.Popen(self.command, shell=True, **kwargs)
         else:
             py_command = self.command + (".py" if not self.command.endswith(".py") else "")
-            self.process = subprocess.Popen([executable, py_command])
+            self.process = subprocess.Popen([executable, py_command], **kwargs)
+
+    def _signal_process(self, process, force=False):
+        """
+        Terminate (or kill, if force is True) the child's whole process
+        group on POSIX, falling back to the process itself elsewhere.
+        """
+
+        if os.name == "posix":
+            try:
+                sig = signal.SIGKILL if force else signal.SIGTERM
+                os.killpg(process.pid, sig)
+                return
+            except (ProcessLookupError, PermissionError):
+                pass
+
+        if force:
+            process.kill()
+        else:
+            process.terminate()
 
     def stop_process(self):
         """
-        Stop the process.
+        Stop the process and wait for it to exit, escalating to a kill
+        if it does not terminate in time.
         """
 
-        if self.process:
-            self.process.terminate()
-            self.process = None
+        process, self.process = self.process, None
+        if not process:
+            return
+
+        self._signal_process(process)
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            if not self.clean:
+                log(Color.RED, "process did not exit in time, killing it")
+            self._signal_process(process, force=True)
+            process.wait()

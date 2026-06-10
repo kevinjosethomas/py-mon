@@ -1,5 +1,9 @@
 """Tests for the Monitor class."""
 
+import os
+import signal
+import subprocess
+
 import pytest
 from argparse import Namespace
 from unittest.mock import Mock, patch, MagicMock
@@ -272,25 +276,71 @@ class TestMonitorProcessManagement:
 
     @patch("pymon.monitor.subprocess.Popen")
     def test_start_process_exec_mode(self, mock_popen):
-        """Should run shell command in exec mode."""
+        """Should run shell command in exec mode in its own process group."""
         args = self.create_args(command="npm run dev", exec=True)
         monitor = Monitor(args)
-        
-        monitor.start_process()
-        
-        mock_popen.assert_called_once_with("npm run dev", shell=True)
 
+        monitor.start_process()
+
+        mock_popen.assert_called_once()
+        call_args = mock_popen.call_args
+        assert call_args[0][0] == "npm run dev"
+        assert call_args[1]["shell"] is True
+        if os.name == "posix":
+            assert call_args[1]["start_new_session"] is True
+
+    @patch("pymon.monitor.os.killpg")
     @patch("pymon.monitor.subprocess.Popen")
-    def test_stop_process(self, mock_popen):
-        """Should terminate running process."""
-        mock_process = Mock()
+    def test_stop_process(self, mock_popen, mock_killpg):
+        """Should terminate the process group and reap the process."""
+        mock_process = Mock(pid=12345)
         mock_popen.return_value = mock_process
-        
+
         args = self.create_args()
         monitor = Monitor(args)
         monitor.start_process()
         monitor.stop_process()
-        
+
+        if os.name == "posix":
+            mock_killpg.assert_called_once_with(12345, signal.SIGTERM)
+        else:
+            mock_process.terminate.assert_called_once()
+        mock_process.wait.assert_called_once_with(timeout=5)
+        assert monitor.process is None
+
+    @patch("pymon.monitor.os.killpg")
+    @patch("pymon.monitor.subprocess.Popen")
+    def test_stop_process_escalates_to_kill(self, mock_popen, mock_killpg):
+        """Should kill the process if it does not exit in time."""
+        mock_process = Mock(pid=12345)
+        mock_process.wait.side_effect = [subprocess.TimeoutExpired("app.py", 5), 0]
+        mock_popen.return_value = mock_process
+
+        args = self.create_args()
+        monitor = Monitor(args)
+        monitor.start_process()
+        monitor.stop_process()
+
+        if os.name == "posix":
+            assert mock_killpg.call_args_list == [
+                ((12345, signal.SIGTERM),),
+                ((12345, signal.SIGKILL),),
+            ]
+        assert mock_process.wait.call_count == 2
+        assert monitor.process is None
+
+    @patch("pymon.monitor.os.killpg", side_effect=ProcessLookupError)
+    @patch("pymon.monitor.subprocess.Popen")
+    def test_stop_process_already_dead(self, mock_popen, mock_killpg):
+        """Should fall back to terminate() if the process group is gone."""
+        mock_process = Mock(pid=12345)
+        mock_popen.return_value = mock_process
+
+        args = self.create_args()
+        monitor = Monitor(args)
+        monitor.start_process()
+        monitor.stop_process()
+
         mock_process.terminate.assert_called_once()
         assert monitor.process is None
 
@@ -299,23 +349,26 @@ class TestMonitorProcessManagement:
         """Should handle stop when no process is running."""
         args = self.create_args()
         monitor = Monitor(args)
-        
+
         # Should not raise
         monitor.stop_process()
-        
+
         assert monitor.process is None
 
+    @patch("pymon.monitor.os.killpg")
     @patch("pymon.monitor.subprocess.Popen")
-    def test_restart_process(self, mock_popen):
+    def test_restart_process(self, mock_popen, mock_killpg):
         """Should stop and start process on restart."""
-        mock_process = Mock()
+        mock_process = Mock(pid=12345)
         mock_popen.return_value = mock_process
-        
+
         args = self.create_args()
         monitor = Monitor(args)
         monitor.start_process()
         monitor.restart_process()
-        
-        mock_process.terminate.assert_called_once()
+
+        if os.name == "posix":
+            mock_killpg.assert_called_once()
+        mock_process.wait.assert_called_once_with(timeout=5)
         assert mock_popen.call_count == 2
 
