@@ -97,113 +97,138 @@ class TestMonitorPathParsing:
         assert pattern == "file[0-9].py"
 
 
-class TestMonitorPatternMatching:
-    """Tests for pattern matching in Monitor."""
-
-    def create_monitor(self):
-        """Helper to create a Monitor instance."""
-        with patch.object(Monitor, '__init__', lambda self, args: None):
-            monitor = Monitor.__new__(Monitor)
-        return monitor
-
-    def test_matches_simple_pattern(self):
-        """Should match simple glob pattern."""
-        monitor = self.create_monitor()
-        
-        assert monitor._matches_pattern("test.py", "*.py") is True
-        assert monitor._matches_pattern("test.js", "*.py") is False
-
-    def test_matches_directory_pattern(self):
-        """Should match pattern with directory."""
-        monitor = self.create_monitor()
-        
-        assert monitor._matches_pattern("src/test.py", "src/*.py") is True
-        assert monitor._matches_pattern("lib/test.py", "src/*.py") is False
-
-    def test_matches_pycache_pattern(self):
-        """Should match __pycache__ pattern."""
-        monitor = self.create_monitor()
-        
-        assert monitor._matches_pattern("src/__pycache__/test.pyc", "*__pycache__*") is True
-        assert monitor._matches_pattern("src/test.py", "*__pycache__*") is False
-
-    def test_matches_log_pattern(self):
-        """Should match log file pattern."""
-        monitor = self.create_monitor()
-        
-        assert monitor._matches_pattern("debug.log", "*.log") is True
-        assert monitor._matches_pattern("app.py", "*.log") is False
-
-
 class TestMonitorInitialization:
     """Tests for Monitor initialization."""
 
+    def create_args(self, **kwargs):
+        """Helper to create args namespace."""
+        defaults = {
+            "command": "app.py",
+            "watch": ["*.py"],
+            "ignore": [],
+            "debug": False,
+            "clean": False,
+            "exec": False,
+            "delay": 250,
+        }
+        defaults.update(kwargs)
+        return Namespace(**defaults)
+
     def test_init_with_single_watch(self):
         """Should initialize with a single watch pattern."""
-        args = Namespace(
-            command="app.py",
-            watch=["*.py"],
-            ignore=[],
-            debug=False,
-            clean=False,
-            exec=False,
-        )
-        
-        monitor = Monitor(args)
-        
+        monitor = Monitor(self.create_args())
+
         assert monitor.command == "app.py"
         assert (".", "*.py") in monitor.watch_items
         assert monitor.debug is False
         assert monitor.clean is False
         assert monitor.exec_mode is False
 
-    def test_init_with_multiple_watch(self):
+    def test_init_with_multiple_watch(self, tmp_path, monkeypatch):
         """Should initialize with multiple watch patterns."""
-        args = Namespace(
-            command="app.py",
-            watch=["*.py", "config/*.json"],
-            ignore=[],
-            debug=False,
-            clean=False,
-            exec=False,
-        )
-        
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "config").mkdir()
+
+        args = self.create_args(watch=["*.py", "config/*.json"])
         monitor = Monitor(args)
-        
+
         assert len(monitor.watch_items) == 2
         assert (".", "*.py") in monitor.watch_items
         assert ("config", "*.json") in monitor.watch_items
 
     def test_init_with_ignore_patterns(self):
         """Should initialize with ignore patterns."""
-        args = Namespace(
-            command="app.py",
-            watch=["*.py"],
-            ignore=["*.log", "*__pycache__*"],
-            debug=False,
-            clean=False,
-            exec=False,
-        )
-        
+        args = self.create_args(ignore=["*.log", "*__pycache__*"])
         monitor = Monitor(args)
-        
+
         assert monitor.ignore_patterns == ["*.log", "*__pycache__*"]
 
     def test_init_exec_mode(self):
         """Should initialize in exec mode."""
-        args = Namespace(
-            command="npm run dev",
-            watch=["*.js"],
-            ignore=[],
-            debug=False,
-            clean=False,
-            exec=True,
-        )
-        
+        args = self.create_args(command="npm run dev", watch=["*.js"], exec=True)
         monitor = Monitor(args)
-        
+
         assert monitor.exec_mode is True
         assert monitor.command == "npm run dev"
+
+    def test_init_nonexistent_directory_exits(self, tmp_path, monkeypatch, capsys):
+        """Should exit with a friendly error when a watch directory is missing."""
+        monkeypatch.chdir(tmp_path)
+
+        args = self.create_args(watch=["nonexistent/*.py"])
+
+        with pytest.raises(SystemExit) as excinfo:
+            Monitor(args)
+
+        assert excinfo.value.code == 1
+        assert "does not exist" in capsys.readouterr().out
+
+    def test_patterns_are_scoped_per_directory(self, tmp_path, monkeypatch):
+        """Each watch directory should only react to its own patterns."""
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "src").mkdir()
+        (tmp_path / "docs").mkdir()
+
+        args = self.create_args(watch=["src/*.py", "docs/*"])
+        monitor = Monitor(args)
+
+        src_handler, docs_handler = monitor.event_handlers
+        assert src_handler.patterns == ["*.py"]
+        assert docs_handler.patterns == ["*"]
+
+    def test_default_ignore_patterns_applied(self):
+        """Handlers should ignore __pycache__/.git noise by default."""
+        monitor = Monitor(self.create_args(ignore=["*.log"]))
+
+        handler = monitor.event_handlers[0]
+        assert "*.log" in handler.ignore_patterns
+        assert "*__pycache__*" in handler.ignore_patterns
+        assert "*.pyc" in handler.ignore_patterns
+
+
+class TestMonitorDebounce:
+    """Tests for debounced restarts."""
+
+    def create_monitor(self, delay=250):
+        args = Namespace(
+            command="app.py",
+            watch=["*.py"],
+            ignore=[],
+            debug=False,
+            clean=True,
+            exec=False,
+            delay=delay,
+        )
+        return Monitor(args)
+
+    def test_burst_of_events_causes_single_restart(self):
+        """Several events in quick succession should restart once."""
+        import time
+
+        monitor = self.create_monitor(delay=50)
+        event = Mock(event_type="modified", src_path="app.py")
+
+        with patch.object(monitor, "restart_process") as mock_restart:
+            for _ in range(5):
+                monitor._handle_event(event)
+            time.sleep(0.3)
+
+        mock_restart.assert_called_once()
+
+    def test_stop_cancels_pending_restart(self):
+        """Stopping the monitor should cancel a pending debounced restart."""
+        import time
+
+        monitor = self.create_monitor(delay=100)
+        monitor.observer.start()
+        event = Mock(event_type="modified", src_path="app.py")
+
+        with patch.object(monitor, "restart_process") as mock_restart:
+            monitor._handle_event(event)
+            monitor.stop()
+            time.sleep(0.3)
+
+        mock_restart.assert_not_called()
 
 
 class TestMonitorProcessManagement:
