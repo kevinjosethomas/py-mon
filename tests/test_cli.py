@@ -1,7 +1,9 @@
 """Tests for CLI argument parsing."""
 
 import pytest
-from pymon.main import parser
+from unittest.mock import patch
+
+from pymon.main import parser, main
 from pymon import __version__
 
 
@@ -128,4 +130,32 @@ class TestCLIArguments:
         assert excinfo.value.code == 0
         out = capsys.readouterr().out
         assert __version__ in out
+
+
+class TestMainLoop:
+    """Tests for the main command loop."""
+
+    @patch("pymon.main.Monitor")
+    def test_eof_falls_back_to_watch_loop(self, mock_monitor, tmp_path, monkeypatch):
+        """Should keep watching (not crash) when stdin is closed."""
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr("sys.argv", ["pymon", "app.py"])
+
+        with patch("builtins.input", side_effect=EOFError), \
+             patch("pymon.main.time.sleep", side_effect=KeyboardInterrupt):
+            main()
+
+        mock_monitor.return_value.stop.assert_called_once()
+
+    @patch("pymon.main.Monitor")
+    def test_rs_and_stop_commands(self, mock_monitor, tmp_path, monkeypatch):
+        """Should restart on 'rs' and terminate on 'stop'."""
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr("sys.argv", ["pymon", "app.py"])
+
+        with patch("builtins.input", side_effect=["rs", "stop"]):
+            main()
+
+        mock_monitor.return_value.restart_process.assert_called_once()
+        mock_monitor.return_value.stop.assert_called_once()
 
