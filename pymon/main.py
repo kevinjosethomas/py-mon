@@ -1,5 +1,6 @@
 import json
 import time
+import signal
 import argparse
 import colorama
 from pathlib import Path
@@ -112,8 +113,15 @@ parser.add_argument(
 )
 
 
+def _raise_keyboard_interrupt(signum, frame):
+    raise KeyboardInterrupt
+
+
 def main():
     colorama.init()
+    # Treat SIGTERM (sent by process managers, `kill`, etc.) like Ctrl+C so
+    # the child process is cleaned up instead of being orphaned
+    signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
     arguments = parser.parse_args()
 
     config, config_name = load_config()
@@ -124,10 +132,18 @@ def main():
     monitor = Monitor(arguments)
     monitor.start()
 
+    interactive = not arguments.clean
+
     try:
         while True:
-            if not arguments.clean:
-                cmd = input()
+            if interactive:
+                try:
+                    cmd = input()
+                except EOFError:
+                    # stdin is closed (e.g. running under a process manager
+                    # or in CI); keep watching without command input
+                    interactive = False
+                    continue
                 if cmd == "rs":
                     monitor.restart_process()
                 elif cmd == "stop":
